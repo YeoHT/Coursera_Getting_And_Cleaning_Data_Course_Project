@@ -1,3 +1,5 @@
+setwd("C:/Users/hwee-theng.yeo/Desktop/Softwares/R/Coursera - Getting and Cleaning Data/ProgrammingAssignment")
+
 #You should create one R script called run_analysis.R that does the following. 
 
 #Merges the training and the test sets to create one data set.
@@ -29,27 +31,27 @@ x_test <- read.table("UCI HAR Dataset/test/X_test.txt")
 y_test <- read.table("UCI HAR Dataset/test/y_test.txt")
 subject_test <- read.table("UCI HAR Dataset/test/subject_test.txt")
 
-# create 'subject' data set
-subject_data <- rbind(subject_train, subject_test)
-colnames(subject_data) <- "SubjectID"
+# create 'x' data set
+x_data <- rbind(x_train, x_test)
 
 # create 'y' data set, aka actitivy
 y_data <- rbind(y_train, y_test)
 
-# create 'x' data set
-x_data <- rbind(x_train, x_test)
+# create 'subject' data set
+subject_data <- rbind(subject_train, subject_test)
+colnames(subject_data) <- "SubjectID"
 
 # create overall data set, x_data must come first because so that the ColToExtract can work
 overalldata <- cbind(x_data,y_data,subject_data)
 
 # Extracts only the measurements on the mean and standard deviation for each measurement. 
-MeanStdCol <- grep(".*Mean.*|.*Std.*", FeaLables[,2])
+ColToExtract <- grep(".*Mean.*|.*Std.*", FeaLables[,2])
 
 # First reduce the features table to what we want
-FeaLables <- FeaLables[MeanStdCol,]
+FeaLables <- FeaLables[ColToExtract,]
 
 # add the subject and activity column into the column
-ColToExtract <- c(MeanStdCol, 562, 563)
+ColToExtract <- c(ColToExtract, 562, 563)
 
 # remove the unwanted columns from overalldata
 finaldata <- overalldata[,ColToExtract]
@@ -59,13 +61,13 @@ colnames(finaldata) <- c(FeaLables$V2, "ActivityID", "Subject")
 colnames(finaldata) <- tolower(colnames(finaldata))
 
 # add activity label into finaldata
-tidydata <- merge(ActLables,finaldata, by.x = "ActivityID", by.y = "activityid", all.y = TRUE, sort = FALSE)
+finaldata <- merge(ActLables,finaldata, by.x = "ActivityID", by.y = "activityid", all.y = TRUE, sort = FALSE)
 
 # calculate the average of each variable for each activity and each subject
-tidydata$Activity <- as.factor(tidydata$Activity)
-tidydata$subject <- as.factor(tidydata$subject)
-finaltidydata = aggregate(tidydata, by=list(activity = tidydata$Activity, subject=tidydata$subject), mean)
-finaltidydata <- finaltidydata[-c(4,91)]
+finaldata$Activity <- as.factor(finaldata$Activity)
+finaldata$subject <- as.factor(finaldata$subject)
+tidydata = aggregate(finaldata, by=list(activity = finaldata$Activity, subject=finaldata$subject), mean)
+tidydata <- tidydata[-c(4,91)]
 
-#export the finaltidydata set as tidy.txt
-write.table(finaltidydata, "tidy.txt", sep = ",", row.names = FALSE)
+#export the tidydata set as tidy.txt
+write.table(tidydata, "tidy.txt", sep = ",", row.names = FALSE)
